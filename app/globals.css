@@ -1,0 +1,31 @@
+@layer ui-sdk;
+@import "tailwindcss";
+@import "@ui-sdk/core/web.css" layer(components);
+
+:root {
+  color-scheme: light;
+  --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --ui-background: #f5f5f7;
+  --ui-foreground: #1d1d1f;
+  --ui-muted: #e8e8ed;
+  --ui-muted-foreground: #6e6e73;
+  --ui-border: #d2d2d7;
+  --ui-input: #86868b;
+  --ui-primary: #0071e3;
+  --ui-primary-foreground: #fff;
+  --ui-ring: #0071e3;
+  --ui-ring-border: #0071e3;
+  --ui-radius: 0.6rem;
+  --ui-font-sans: var(--font-system);
+}
+
+@theme inline {
+  --font-sans: var(--font-system);
+}
+
+body {
+  background: radial-gradient(90% 70% at 50% 45%, #ffffff, #f5f5f7 60%, #ebebee);
+  color: #1d1d1f;
+  font-family: var(--font-system);
+  -webkit-font-smoothing: antialiased;
+}
