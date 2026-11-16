@@ -66,6 +66,10 @@ function Credits() {
         Made with{" "}
         <a href="https://ui-sdk.dev/" target="_blank" rel="noopener">
           ui-sdk
+        </a>{" "}
+        by{" "}
+        <a href="https://x.com/nays1_" target="_blank" rel="noopener">
+          nays
         </a>
         <span aria-hidden="true"> · </span>
         <CollapsibleTrigger className={styles.howTo}>How to use</CollapsibleTrigger>

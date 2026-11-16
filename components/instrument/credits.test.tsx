@@ -13,10 +13,11 @@ describe("credits and how to use", () => {
   beforeEach(() => vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] }))
   afterEach(() => vi.useRealTimers())
 
-  test("credits link to HiChord and ui-sdk", () => {
+  test("credits link to HiChord, ui-sdk and nays", () => {
     render(<Credits />)
     expect(screen.getByRole("link", { name: "HiChord" }).getAttribute("href")).toBe("https://hichord.shop/")
     expect(screen.getByRole("link", { name: "ui-sdk" }).getAttribute("href")).toBe("https://ui-sdk.dev/")
+    expect(screen.getByRole("link", { name: "nays" }).getAttribute("href")).toBe("https://x.com/nays1_")
   })
 
   test("the guide starts open, shows keycaps, and tucks itself away after ten seconds", () => {
