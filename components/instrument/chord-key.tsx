@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from "@ui-sdk/react/button"
-import type { KeyboardEvent, PointerEvent } from "react"
-import { focusCameFromPointer } from "@/lib/focus-modality"
+import { isFocusFromKeyboard } from "@ui-sdk/core"
+import { useRef, type KeyboardEvent, type PointerEvent } from "react"
 import styles from "./instrument.module.css"
 
 type ChordKeyProps = {
@@ -17,10 +17,12 @@ type ChordKeyProps = {
   onTap: (degree: number) => void
 }
 
-const isPressKey = (event: KeyboardEvent) =>
-  event.key === "Enter" || (event.key === " " && !focusCameFromPointer())
 
 function ChordKey({ degree, label, symbol, sub, active, echo, onPress, onRelease, onTap }: ChordKeyProps) {
+  const keyboardFocused = useRef(false)
+  // Space presses a key reached with Tab; on a key that was just clicked, Space belongs to the loop.
+  const isPressKey = (event: KeyboardEvent) =>
+    event.key === "Enter" || (event.key === " " && keyboardFocused.current)
   const pointer = (event: PointerEvent) => `pointer:${event.pointerId}`
   const keyboard = `press:${degree}`
 
@@ -48,6 +50,9 @@ function ChordKey({ degree, label, symbol, sub, active, echo, onPress, onRelease
         if (!isPressKey(event)) return
         event.preventDefault()
         onRelease(keyboard)
+      }}
+      onFocus={() => {
+        keyboardFocused.current = isFocusFromKeyboard()
       }}
       onBlur={() => onRelease(keyboard)}
       onClick={(_event, { source }) => {

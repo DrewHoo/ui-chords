@@ -1,6 +1,7 @@
 "use client"
 
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@ui-sdk/react/collapsible"
+import { useShortcutHint } from "@ui-sdk/react/shortcuts"
 import { useEffect, useState, type ReactNode } from "react"
 import styles from "./instrument.module.css"
 
@@ -22,13 +23,12 @@ function Keys({ children }: { children: string[] }) {
   )
 }
 
-const KEYBOARD: { keys: ReactNode; label: string }[] = [
+const HELD: { keys: ReactNode; label: string }[] = [
   { keys: <Keys>{["1", "–", "7"]}</Keys>, label: "Play" },
   { keys: <Keys>{["←", "↑", "→", "↓"]}</Keys>, label: "Color the chord" },
   { keys: <Keys>{["Z", "X", "C"]}</Keys>, label: "Chords, melody, drums" },
   { keys: <Keys>{["R"]}</Keys>, label: "Record the selected loop" },
   { keys: <Keys>{["Space"]}</Keys>, label: "Play the loop" },
-  { keys: <Keys>{["⌘", "Z"]}</Keys>, label: "Undo" },
 ]
 
 const TOUCH = [
@@ -38,6 +38,8 @@ const TOUCH = [
 ]
 
 function Credits() {
+  const undo = useShortcutHint("mod+z")
+  const keyboard = [...HELD, { keys: <Keys>{[undo.text]}</Keys>, label: "Undo" }]
   const [open, setOpen] = useState(true)
   const [reading, setReading] = useState(false)
 
@@ -70,7 +72,7 @@ function Credits() {
       </p>
       <CollapsiblePanel className={styles.howToPanel}>
         <ul className={`${styles.howToList} ${styles.keyboardHelp}`}>
-          {KEYBOARD.map((item) => (
+          {keyboard.map((item) => (
             <li key={item.label}>
               {item.keys}
               <span>{item.label}</span>

@@ -1,6 +1,8 @@
 "use client"
 
+import { announce, isFocusFromKeyboard } from "@ui-sdk/core"
 import { Button } from "@ui-sdk/react/button"
+import { useShortcut } from "@ui-sdk/react/shortcuts"
 import {
   useCallback,
   useEffect,
@@ -16,7 +18,6 @@ import { directionFromArrows } from "@/components/joystick/joystick"
 import { DRUM_LABELS, DRUM_PADS, KITS } from "@/lib/drums"
 import { download, encodeMp3, fileStamp, renderLoop } from "@/lib/export"
 import { COUNT_IN_BEATS, beatsUntil, echoAt, loopPosition, meterAt } from "@/lib/loop"
-import { focusCameFromPointer, trackFocusModality } from "@/lib/focus-modality"
 import { Looper } from "@/lib/looper"
 import { canRecordScreen, recordScreen, type ScreenRecording } from "@/lib/screen-recording"
 import { Synth, type SynthSettings } from "@/lib/synth"
@@ -53,7 +54,6 @@ const JOYSTICK_KEYS: Record<string, string> = {
   KeyA: "ArrowLeft",
   KeyD: "ArrowRight",
 }
-const PART_KEYS: Record<string, Part> = { KeyZ: "chords", KeyX: "melody", KeyC: "drums" }
 const WIDGETS =
   'input, textarea, select, [contenteditable="true"], [role="dialog"], [role="listbox"], [role="menu"], [role="slider"], [role="radio"], [role="switch"]'
 const TEXT_FIELDS = 'input, textarea, [contenteditable="true"]'
@@ -128,6 +128,7 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     (on: boolean) => {
       looper.setAdjusted(on, latest.current.snap)
       flash({ kind: "adjust" })
+      announce(on ? `Timing snaps to 1/${latest.current.snap} notes` : "Timing adjust off")
     },
     [looper, flash]
   )
@@ -135,6 +136,8 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     (slot: number) => {
       looper.select(slot)
       flash({ kind: "track", slot })
+      const track = looper.getSnapshot().tracks[slot]
+      announce(`Track ${slot + 1}, ${track ? `${track.bars} bars${track.muted ? ", muted" : ""}` : "empty, ready to record"}`)
     },
     [looper, flash]
   )
@@ -144,13 +147,17 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     if (!current.tracks[current.selected]) return
     looper.remove(current.selected)
     flash({ kind: "deleted", slot: current.selected })
+    announce(`Track ${current.selected + 1} deleted`)
   }, [looper, flash])
   const undo = useCallback(() => {
     const before = looper.getSnapshot()
     looper.undo()
     const after = looper.getSnapshot()
     const restored = after.tracks.findIndex((track, slot) => track && !before.tracks[slot])
-    if (restored !== -1) flash({ kind: "restored", slot: restored })
+    if (restored !== -1) {
+      flash({ kind: "restored", slot: restored })
+      announce(`Track ${restored + 1} restored`)
+    }
   }, [looper, flash])
 
   const wake = useCallback(async () => {
@@ -245,7 +252,6 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     )
   }, [synth, looper, wake, stopVideo])
 
-  const actions = useRef({ record, setPlaying, undo: () => {}, setPart: (part: Part) => update({ part }) })
 
   const { part, octave, voiceLeading, bass } = settings
   const active = held.length > 0 ? held[held.length - 1] : null
@@ -272,9 +278,6 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     const current = looper.getSnapshot()
     if (current.division !== settings.snap) looper.setAdjusted(current.adjusted, settings.snap)
   }, [looper, settings.snap])
-  useEffect(() => {
-    actions.current = { record, setPlaying, undo, setPart: (part: Part) => update({ part }) }
-  })
 
   useEffect(() => {
     if (part === "melody") {
@@ -334,22 +337,55 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     return () => clearInterval(timer)
   }, [videoStart])
 
+  const keyboardFocus = useRef(false)
   useEffect(() => {
-    trackFocusModality()
+    const track = () => {
+      keyboardFocus.current = isFocusFromKeyboard()
+    }
+    document.addEventListener("focusin", track)
+    return () => document.removeEventListener("focusin", track)
+  }, [])
+
+  const outsideWidgets = () => !document.activeElement?.closest(WIDGETS)
+  const setPart = (next: Part) => update({ part: next })
+  useShortcut("r", (event) => !event.repeat && void record(), {
+    description: "Record the selected loop",
+    when: outsideWidgets,
+  })
+  useShortcut(
+    "space",
+    (event) => {
+      if (event.repeat) return
+      if (event.target instanceof HTMLElement && event.target !== document.body) event.target.blur()
+      const phase = looper.getSnapshot().phase
+      setPlaying(!["starting", "playing", "armed", "recording"].includes(phase))
+    },
+    {
+      description: "Play the loop",
+      // A key reached with Tab takes Space as a press; a key that was just clicked keeps focus, and Space plays, as in a DAW.
+      when: () => outsideWidgets() && (document.activeElement === document.body || !keyboardFocus.current),
+    }
+  )
+  useShortcut("z", () => setPart("chords"), { description: "Chords", when: outsideWidgets })
+  useShortcut("x", () => setPart("melody"), { description: "Melody", when: outsideWidgets })
+  useShortcut("c", () => setPart("drums"), { description: "Drums", when: outsideWidgets })
+  useShortcut("mod+z", undo, {
+    description: "Undo",
+    when: () => !document.activeElement?.closest(TEXT_FIELDS),
+  })
+
+  useEffect(() => {
+    // Holding a key sustains a chord, so these need key up too, which shortcuts don't report.
     const arrows = new Set<string>()
-    let transportSpace = false
-    const inside = (event: KeyboardEvent, selector: string) =>
-      event.target instanceof Element && event.target.closest(selector) !== null
     const ignored = (event: KeyboardEvent) =>
-      event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || inside(event, WIDGETS)
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      (event.target instanceof Element && event.target.closest(WIDGETS) !== null)
     const steer = () => setDirection(directionFromArrows([...arrows].map((code) => JOYSTICK_KEYS[code])))
 
     const down = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.code === "KeyZ" && !event.shiftKey && !inside(event, TEXT_FIELDS)) {
-        event.preventDefault()
-        actions.current.undo()
-        return
-      }
       if (ignored(event)) return
       const degree = chordDegree(event)
       if (degree !== null) {
@@ -361,29 +397,9 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
         event.preventDefault()
         arrows.add(event.code)
         steer()
-        return
-      }
-      if (event.repeat) return
-      if (event.code === "KeyR") {
-        event.preventDefault()
-        void actions.current.record()
-      } else if (event.code === "Space" && (event.target === document.body || focusCameFromPointer())) {
-        // A button clicked with the mouse keeps focus; Space still means play there, as in a DAW.
-        event.preventDefault()
-        transportSpace = true
-        if (event.target instanceof HTMLElement && event.target !== document.body) event.target.blur()
-        const phase = looper.getSnapshot().phase
-        actions.current.setPlaying(!["starting", "playing", "armed", "recording"].includes(phase))
-      } else if (PART_KEYS[event.code]) {
-        event.preventDefault()
-        actions.current.setPart(PART_KEYS[event.code])
       }
     }
     const up = (event: KeyboardEvent) => {
-      if (event.code === "Space" && transportSpace) {
-        event.preventDefault()
-        transportSpace = false
-      }
       if (chordDegree(event) !== null) release(`key:${event.code}`)
       if (arrows.delete(event.code)) steer()
     }
@@ -405,7 +421,18 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
       window.removeEventListener("keyup", up)
       window.removeEventListener("blur", reset)
     }
-  }, [press, release, looper])
+  }, [press, release])
+
+  const lastPhase = useRef(loop.phase)
+  useEffect(() => {
+    const before = lastPhase.current
+    lastPhase.current = loop.phase
+    if (loop.phase === "recording" && before !== "recording" && loop.recording !== null) {
+      announce(`Recording track ${loop.recording + 1}`)
+    } else if (before === "recording" && loop.phase === "playing") {
+      announce("Take recorded")
+    }
+  }, [loop.phase, loop.recording])
 
   const countdown = counting ? clock.countdown : null
   const echo = echoing ? clock.echo.split(",").filter(Boolean).map(Number) : []

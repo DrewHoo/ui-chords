@@ -5,7 +5,6 @@
   --spring-press-duration: 300ms;
   --spring-stick: linear(0, 0.0388, 0.1375, 0.2724, 0.4235, 0.5751, 0.7161, 0.8389, 0.9396, 1.0169, 1.0715, 1.1058, 1.1228, 1.126, 1.1191, 1.1054, 1.0877, 1.0684, 1.0494, 1.0321, 1.0172, 1.0051, 0.996, 0.9898, 0.986, 0.9843, 0.9842, 0.9853, 0.9872, 0.9895, 0.9919, 0.9943, 0.9964, 0.9982, 0.9996, 1.0007, 1.0014, 1.0018, 1.002, 1.002, 1);
   --spring-stick-duration: 600ms;
-  --focus: #0071e3;
 
   --device-ratio: 1.42;
 
@@ -81,7 +80,6 @@
   aspect-ratio: 1;
   margin-top: calc(2.2 * var(--u));
 }
-
 
 .right {
   display: grid;
@@ -245,11 +243,6 @@
     0 calc(0.1 * var(--u)) calc(0.2 * var(--u)) rgb(0 0 0 / 0.3);
   transition-duration: 40ms;
   transition-timing-function: ease-out;
-}
-
-.key:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .keys {
@@ -479,11 +472,6 @@
   transition: none;
 }
 
-.stick:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 3px;
-}
-
 .wheel {
   position: absolute;
   top: calc(-1.3 * var(--u));
@@ -527,11 +515,6 @@
 
 .wheelControl[data-scrubbing] {
   transition: none;
-}
-
-.wheelControl:has(:focus-visible) {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .wheelTrack {
@@ -586,11 +569,6 @@
 .sideButton:active {
   transform: translateX(calc(0.35 * var(--u)));
   transition-duration: 40ms;
-}
-
-.sideButton:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .sideButton svg {
@@ -678,11 +656,6 @@
   color: #1d1d1f;
 }
 
-.panel [data-slot="select-trigger"]:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
-}
-
 .panel [data-slot="select-content"] {
   padding: 5px;
   border: 0.5px solid rgb(0 0 0 / 0.1);
@@ -703,8 +676,8 @@
 }
 
 .panel [data-slot="select-item"][data-highlighted] {
-  background: #0071e3;
-  color: #fff;
+  background: rgb(0 0 0 / 0.07);
+  color: #1d1d1f;
 }
 
 .segmented {
@@ -733,11 +706,6 @@
   font-weight: 650;
 }
 
-.panel [data-slot="segmented-control-item"]:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: -1px;
-}
-
 .panel [data-slot="segmented-control-indicator"] {
   border: 0.5px solid rgb(0 0 0 / 0.04);
   border-radius: 7px;
@@ -763,11 +731,6 @@
 
 .panel [data-slot="switch"][data-checked] {
   background: #248a3d;
-}
-
-.panel [data-slot="switch"]:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .panel [data-slot="switch-thumb"],
@@ -818,11 +781,6 @@
   box-shadow:
     0 3px 8px rgb(0 0 0 / 0.15),
     0 1px 1px rgb(0 0 0 / 0.16);
-}
-
-.panel [data-slot="slider-thumb"]:has(:focus-visible) {
-  outline: 3px solid rgb(0 113 227 / 0.6);
-  outline-offset: 1px;
 }
 
 .beats {
@@ -931,11 +889,6 @@
   cursor: default;
 }
 
-.trackLight[data-slot="segmented-control-item"]:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
-}
-
 .trackNumber {
   font-variant-numeric: tabular-nums;
 }
@@ -980,11 +933,6 @@
   box-shadow:
     inset 0 calc(0.15 * var(--u)) calc(0.45 * var(--u)) rgb(0 0 0 / 0.14),
     0 calc(0.1 * var(--u)) calc(0.2 * var(--u)) rgb(0 0 0 / 0.3);
-}
-
-.deckKey:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .deckKey[data-disabled] {
@@ -1055,7 +1003,7 @@
 }
 
 .adjustKey[data-pressed] {
-  color: #0071e3;
+  color: #1f8a3c;
 }
 
 .stopVideo {
@@ -1115,11 +1063,6 @@
   cursor: default;
 }
 
-.trackToggle:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
-}
-
 .trackHint {
   margin: 0;
   font-size: 12px;
@@ -1159,8 +1102,8 @@
 }
 
 .menu [data-slot="menu-item"][data-highlighted] {
-  background: #0071e3;
-  color: #fff;
+  background: rgb(0 0 0 / 0.07);
+  color: #1d1d1f;
 }
 
 .menu [data-slot="menu-item"][data-disabled] {
@@ -1226,11 +1169,6 @@
   }
 }
 
-
-
-
-
-
 .footer {
   position: relative;
   display: grid;
@@ -1261,14 +1199,6 @@
   text-decoration: underline;
 }
 
-.credit a:focus-visible {
-  outline: 2px solid #0071e3;
-  outline-offset: 2px;
-  border-radius: 3px;
-}
-
-
-
 .rotateHint {
   display: none;
 }
@@ -1294,7 +1224,6 @@
     --u: min(1cqw, calc(var(--fit-height) / 70.7));
   }
 }
-
 
 @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
   .rotateHint {
@@ -1374,11 +1303,6 @@
 
 .howTo:hover {
   text-decoration: underline;
-}
-
-.howTo:focus-visible {
-  outline: 2px solid #0071e3;
-  outline-offset: 2px;
 }
 
 /* Floats under the credits, so opening it never moves the instrument. */

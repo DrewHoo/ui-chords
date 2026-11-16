@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { createAgent } from "@ui-sdk/react/agent"
+import { shortcuts } from "@ui-sdk/react/shortcuts"
 import { describe, expect, test } from "vitest"
 import { Instrument } from "./instrument"
 
@@ -12,34 +13,34 @@ const chordKey = (number: number) =>
 describe("parts and the transport", () => {
   test("Z, X and C switch between chords, melody and drums", () => {
     render(<Instrument />)
-    fireEvent.keyDown(window, { key: "x", code: "KeyX" })
+    fireEvent.keyDown(document.body, { key: "x", code: "KeyX" })
     expect(document.body.textContent).toContain("MELODY")
     expect(screen.getByRole("button", { name: "Note 3, E" })).toBeTruthy()
 
-    fireEvent.keyDown(window, { key: "3", code: "Digit3" })
+    fireEvent.keyDown(document.body, { key: "3", code: "Digit3" })
     expect(playing()).toBe("E5")
-    fireEvent.keyDown(window, { key: "ArrowUp", code: "ArrowUp" })
+    fireEvent.keyDown(document.body, { key: "ArrowUp", code: "ArrowUp" })
     expect(playing()).toBe("E6")
-    fireEvent.keyUp(window, { key: "ArrowUp", code: "ArrowUp" })
-    fireEvent.keyUp(window, { key: "3", code: "Digit3" })
+    fireEvent.keyUp(document.body, { key: "ArrowUp", code: "ArrowUp" })
+    fireEvent.keyUp(document.body, { key: "3", code: "Digit3" })
     expect(playing()).toBe("")
 
-    fireEvent.keyDown(window, { key: "c", code: "KeyC" })
+    fireEvent.keyDown(document.body, { key: "c", code: "KeyC" })
     expect(screen.getByRole("button", { name: "Pad 1, Kick" })).toBeTruthy()
     expect(screen.getByRole("button", { name: "Pad 4, Hi-hat" })).toBeTruthy()
-    fireEvent.keyDown(window, { key: "1", code: "Digit1" })
+    fireEvent.keyDown(document.body, { key: "1", code: "Digit1" })
     expect(screen.getByRole("button", { name: "Pad 1, Kick" }).hasAttribute("data-active")).toBe(true)
-    fireEvent.keyUp(window, { key: "1", code: "Digit1" })
+    fireEvent.keyUp(document.body, { key: "1", code: "Digit1" })
 
-    fireEvent.keyDown(window, { key: "z", code: "KeyZ" })
+    fireEvent.keyDown(document.body, { key: "z", code: "KeyZ" })
     expect(chordKey(1)).toHaveProperty("ariaLabel", "Chord 1, C major")
   })
 
   test("drum pads can be held together", () => {
     render(<Instrument />)
-    fireEvent.keyDown(window, { key: "c", code: "KeyC" })
-    fireEvent.keyDown(window, { key: "1", code: "Digit1" })
-    fireEvent.keyDown(window, { key: "4", code: "Digit4" })
+    fireEvent.keyDown(document.body, { key: "c", code: "KeyC" })
+    fireEvent.keyDown(document.body, { key: "1", code: "Digit1" })
+    fireEvent.keyDown(document.body, { key: "4", code: "Digit4" })
     expect(screen.getByRole("button", { name: "Pad 1, Kick" }).hasAttribute("data-active")).toBe(true)
     expect(screen.getByRole("button", { name: "Pad 4, Hi-hat" }).hasAttribute("data-active")).toBe(true)
   })
@@ -117,4 +118,20 @@ describe("parts and the transport", () => {
     expect(adjust.getAttribute("aria-pressed")).toBe("false")
     expect(container.textContent).toContain("ADJUST OFF")
   })
+
+  test("the keyboard shortcuts are registered with ui-sdk, described for help screens", () => {
+    render(<Instrument />)
+    const listed = shortcuts.list().map(({ keys, description }) => `${keys}: ${description}`)
+    expect(listed).toEqual(
+      expect.arrayContaining([
+        "r: Record the selected loop",
+        "space: Play the loop",
+        "z: Chords",
+        "x: Melody",
+        "c: Drums",
+        "mod+z: Undo",
+      ])
+    )
+  })
 })
+

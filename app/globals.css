@@ -13,8 +13,8 @@
   --ui-input: #86868b;
   --ui-primary: #0071e3;
   --ui-primary-foreground: #fff;
-  --ui-ring: #0071e3;
-  --ui-ring-border: #0071e3;
+  --ui-ring: transparent;
+  --ui-ring-border: var(--ui-input);
   --ui-radius: 0.6rem;
   --ui-font-sans: var(--font-system);
 }
@@ -28,4 +28,16 @@ body {
   color: #1d1d1f;
   font-family: var(--font-system);
   -webkit-font-smoothing: antialiased;
+}
+
+/* No focus rings or tap flashes anywhere: a pressed or chosen control never stays outlined. */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus,
+*:focus-visible {
+  outline: none;
 }
