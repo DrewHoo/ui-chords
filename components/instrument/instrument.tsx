@@ -19,7 +19,7 @@ import { DRUM_LABELS, DRUM_PADS, KITS } from "@/lib/drums"
 import { download, encodeMp3, fileStamp, renderLoop } from "@/lib/export"
 import { COUNT_IN_BEATS, beatsUntil, echoAt, loopPosition, meterAt } from "@/lib/loop"
 import { Looper } from "@/lib/looper"
-import { canRecordScreen, recordScreen, type ScreenRecording } from "@/lib/screen-recording"
+import { canRecordScreen, recordScreen, type RecordedVideo, type ScreenRecording } from "@/lib/screen-recording"
 import { Synth, type SynthSettings } from "@/lib/synth"
 import {
   DIRECTIONS,
@@ -36,7 +36,9 @@ import {
 import { ChordKey } from "./chord-key"
 import { MinusIcon, PlusIcon } from "./icons"
 import { Lcd, Meter } from "./lcd"
-import { DEFAULT_SETTINGS, type Part, type Settings, type UpdateSettings } from "./settings"
+import { createSettingsStore } from "./saved-settings"
+import { createVideoConfirm, VideoReadyDialog } from "./video-ready"
+import { DEFAULT_SETTINGS, type Part, type Settings } from "./settings"
 import { RhythmPanel, SoundPanel, TonalityPanel } from "./settings-panels"
 import { Speaker } from "./speaker"
 import { Transport } from "./transport"
@@ -55,10 +57,11 @@ const JOYSTICK_KEYS: Record<string, string> = {
   KeyD: "ArrowRight",
 }
 const WIDGETS =
-  'input, textarea, select, [contenteditable="true"], [role="dialog"], [role="listbox"], [role="menu"], [role="slider"], [role="radio"], [role="switch"]'
+  'input, textarea, select, [contenteditable="true"], [role="dialog"], [role="alertdialog"], [role="listbox"], [role="menu"], [role="slider"], [role="radio"], [role="switch"]'
 const TEXT_FIELDS = 'input, textarea, [contenteditable="true"]'
 const STYLES = { play: "HOLD", strum: "STRUM", arp: "ARP" }
-const VIDEO_LIMIT = 3 * 60 * 1000
+// The longest video X takes from most accounts.
+const VIDEO_LIMIT = 140 * 1000
 
 const noSubscription = () => () => {}
 
@@ -80,7 +83,8 @@ function clockText(milliseconds: number) {
 }
 
 function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: Settings }) {
-  const [settings, setSettings] = useState(initialSettings)
+  const [store] = useState(() => createSettingsStore(initialSettings))
+  const settings = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
   const [synth] = useState(() => new Synth(initialSettings))
   const [looper] = useState(() => new Looper())
   const loop = useSyncExternalStore(looper.subscribe, looper.getSnapshot, looper.getServerSnapshot)
@@ -91,6 +95,7 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
   const [progress, setProgress] = useState<number | null>(null)
   const [videoStart, setVideoStart] = useState<number | null>(null)
   const [videoElapsed, setVideoElapsed] = useState(0)
+  const [savingVideo, setSavingVideo] = useState(false)
   const [clock, setClock] = useState<{ countdown: number | null; echo: string; beat: number }>({
     countdown: null,
     echo: "",
@@ -107,7 +112,7 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
   })
   useEffect(() => () => looper.dispose(), [looper])
 
-  const update = useCallback<UpdateSettings>((patch) => setSettings((current) => ({ ...current, ...patch })), [])
+  const update = store.update
 
   const [notice, setNotice] = useState<Notice | null>(null)
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -228,15 +233,31 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
     }
   }, [looper])
 
+  const [confirmVideo] = useState(createVideoConfirm)
   const stopVideo = useCallback(async () => {
     const current = session.current
     if (!current) return
     session.current = null
     clearTimeout(videoTimer.current ?? undefined)
-    const blob = await current.stop()
-    if (blob.size > 0) download(blob, `ui-chords-${fileStamp()}.${current.extension}`)
     setVideoStart(null)
-  }, [])
+    setSavingVideo(true)
+    let video: RecordedVideo
+    try {
+      video = await current.stop()
+    } catch {
+      announce("The video couldn't be saved")
+      return
+    } finally {
+      setSavingVideo(false)
+    }
+    if (video.blob.size === 0) return
+    const url = URL.createObjectURL(video.blob)
+    const name = `ui-chords-${fileStamp()}.${video.extension}`
+    const keep = await confirmVideo({ url, seconds: video.seconds, bytes: video.blob.size, extension: video.extension })
+    if (keep) download(video.blob, name)
+    // The preview keeps playing while the dialog animates out.
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }, [confirmVideo])
 
   const startVideo = useCallback(() => {
     void wake()
@@ -491,6 +512,7 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
   let line: ReactNode
   let alert = false
   if (progress !== null) line = `EXPORT ${Math.round(progress * 100)}%`
+  else if (savingVideo) line = "SAVING VIDEO"
   else if (videoStart !== null) {
     line = `● VIDEO ${clockText(videoElapsed)}`
     alert = true
@@ -601,6 +623,7 @@ function Instrument({ initialSettings = DEFAULT_SETTINGS }: { initialSettings?: 
 
 
           <VolumeWheel value={settings.volume} onChange={setVolume} />
+          <VideoReadyDialog confirm={confirmVideo} />
 
           <p role="status" aria-label="Now playing" className="sr-only">
             {chord ? chord.name : note ? note.pitch : ""}

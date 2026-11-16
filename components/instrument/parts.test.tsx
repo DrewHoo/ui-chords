@@ -78,7 +78,7 @@ describe("parts and the transport", () => {
     const recordButton = screen.getByRole("button", { name: "Record" })
     expect(recordButton.hasAttribute("aria-disabled")).toBe(false)
     expect(recordButton.getAttribute("aria-pressed")).toBe("false")
-    expect(screen.getByRole("button", { name: "Export" })).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Download" })).toBeTruthy()
 
     await agent.act({ steps: [{ ref: "Rhythm", action: "press" }] })
     for (const name of ["Track 1", "Track 2", "Track 3", "Track 4"]) {
@@ -87,9 +87,9 @@ describe("parts and the transport", () => {
     expect(screen.getByText("Press record to lay down your first take.")).toBeTruthy()
   })
 
-  test("the export menu offers audio only once there's a take", async () => {
+  test("the download menu offers audio only once there's a take", async () => {
     render(<Instrument />)
-    const result = await agent.act({ steps: [{ ref: "Export", action: "press" }] })
+    const result = await agent.act({ steps: [{ ref: "Download", action: "press" }] })
     expect(result.ok, result.error?.message).toBe(true)
     const audio = await screen.findByRole("menuitem", { name: "Download MP3" })
     expect(audio.getAttribute("aria-disabled")).toBe("true")

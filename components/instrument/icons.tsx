@@ -99,13 +99,13 @@ function UndoIcon() {
   )
 }
 
-function ShareIcon() {
+function DownloadIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
-      <path d="M12 3.8v11.4M7.8 8 12 3.8 16.2 8" />
-      <path d="M8.2 11H6.6a1.8 1.8 0 0 0-1.8 1.8v5.6a1.8 1.8 0 0 0 1.8 1.8h10.8a1.8 1.8 0 0 0 1.8-1.8v-5.6a1.8 1.8 0 0 0-1.8-1.8h-1.6" />
+      <path d="M12 3.8v11.4M7.8 11 12 15.2 16.2 11" />
+      <path d="M4.8 15.4v3a1.8 1.8 0 0 0 1.8 1.8h10.8a1.8 1.8 0 0 0 1.8-1.8v-3" />
     </svg>
   )
 }
 
-export { ClockIcon, KeyIcon, MagnetIcon, MinusIcon, PlayIcon, PlusIcon, RecordIcon, ShareIcon, StopIcon, TrashIcon, UndoIcon, WaveIcon }
+export { ClockIcon, DownloadIcon, KeyIcon, MagnetIcon, MinusIcon, PlayIcon, PlusIcon, RecordIcon, StopIcon, TrashIcon, UndoIcon, WaveIcon }

@@ -27,4 +27,8 @@ document.head.append(
   })
 )
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  // Settings are saved between visits; each test starts from the defaults.
+  localStorage.clear()
+})

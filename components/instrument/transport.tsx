@@ -6,7 +6,7 @@ import { SegmentedControl, SegmentedControlItem } from "@ui-sdk/react/segmented-
 import { Toggle } from "@ui-sdk/react/toggle"
 import { MAX_TAKES } from "@/lib/loop"
 import type { LooperState } from "@/lib/looper"
-import { MagnetIcon, PlayIcon, RecordIcon, ShareIcon, StopIcon, TrashIcon } from "./icons"
+import { DownloadIcon, MagnetIcon, PlayIcon, RecordIcon, StopIcon, TrashIcon } from "./icons"
 import styles from "./instrument.module.css"
 
 type TransportProps = {
@@ -124,8 +124,8 @@ function Transport({
           </Button>
         ) : (
           <Menu onAction={(value) => (value === "audio" ? onExportAudio() : onStartVideo())}>
-            <MenuTrigger className={styles.deckKey} aria-label="Export">
-              <ShareIcon />
+            <MenuTrigger className={styles.deckKey} aria-label="Download">
+              <DownloadIcon />
             </MenuTrigger>
             <MenuContent className={styles.menu} side="top" align="start" sideOffset={10}>
               <MenuItem value="audio" disabled={!hasTracks || taking}>

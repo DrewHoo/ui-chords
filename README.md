@@ -15,7 +15,8 @@ Inspired by [HiChord](https://hichord.shop/), a hardware pocket chord synth. If 
 - **Three parts.** Chords, melody (the keys play single notes of the scale) and drums (kick, clap, snare, hat, tom, rim and open hat, in two kits).
 - **Sound.** Eight instruments (FM piano, saw, organ, strings, square, sine, bell, pad), envelopes, a filter, reverb, delay and chorus. Chords can be held, strummed or arpeggiated at the current tempo.
 - **A four-track looper.** Pick a loop light and record. There's a four-beat count-in, a metronome shared by every loop, and a beat guide on the screen. Each take can be 2, 4 or 8 bars. Adjust snaps a take to the beat in 1/4, 1/8 or 1/16, and each loop can be muted, recorded over or deleted, with undo.
-- **Export.** Download the loops as an MP3, rendered offline so it's sample-accurate, or record a video of the tab while it plays to share it.
+- **Download.** Save the loops as an MP3, rendered offline so it's sample-accurate, or record a video of the tab while it plays. The video is an H.264 MP4 at up to 1080p and 30 fps, ready for X, Instagram or QuickTime, and you watch it before you download it.
+- **Remembers you.** Key, sound, tempo and every other setting are saved in the browser, so a reload picks up where you left off.
 - **Anywhere.** Mouse, touch and keyboard. On phones it plays in landscape and scales to fit the screen.
 
 ## How to play
@@ -41,7 +42,9 @@ Every control is a [ui-sdk](https://ui-sdk.dev/) component, so focus, keyboard, 
 | Record, play, Adjust, track mute | `Toggle` |
 | Loop lights; chords, melody and drums | `SegmentedControl` |
 | Tonality, Sound and Rhythm panels | `Popover`, `Field`, `Select`, `SegmentedControl`, `Slider`, `Switch` |
-| Export | `Menu` |
+| Download menu | `Menu` |
+| Video preview before downloading | `AlertDialog`, `createConfirm` |
+| Saved settings | `createLocalStorage` |
 | Volume wheel | `Slider` and `bindDrag` |
 | Joystick | A custom component built on `definePrimitive` and `createParts` |
 | Keyboard shortcuts and the ⌘Z hint | `useShortcut`, `useShortcutHint` |
@@ -49,7 +52,7 @@ Every control is a [ui-sdk](https://ui-sdk.dev/) component, so focus, keyboard, 
 | Screen reader notices | `announce` |
 | How to use | `Collapsible` |
 
-Some parts are outside ui-sdk because they aren't interface: the synth, drums and looper run on the Web Audio API with an AudioWorklet, the MP3 is encoded with [lamejs](https://www.npmjs.com/package/@breezystack/lamejs), and video uses `getDisplayMedia` and `MediaRecorder`. Holding a number key sustains a chord until it's released, which needs key-up events, so those keys have their own listener.
+Some parts are outside ui-sdk because they aren't interface: the synth, drums and looper run on the Web Audio API with an AudioWorklet, the MP3 is encoded with [lamejs](https://www.npmjs.com/package/@breezystack/lamejs), and the video is captured with `getDisplayMedia` and encoded with [Mediabunny](https://mediabunny.dev/) over WebCodecs. Holding a number key sustains a chord until it's released, which needs key-up events, so those keys have their own listener.
 
 ## Run it
 
