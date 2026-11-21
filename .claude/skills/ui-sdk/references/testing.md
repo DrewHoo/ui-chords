@@ -11,7 +11,7 @@ Wiring includes what a person does with the keyboard: press Space on every switc
 For React with Vite and Vitest. Other frameworks swap the testing library, like `@testing-library/vue`:
 
 ```bash
-npm i -D vitest jsdom @testing-library/react @testing-library/dom @testing-library/user-event
+pnpm add -D vitest jsdom @testing-library/react @testing-library/dom @testing-library/user-event
 ```
 
 `vitest.config.ts`:

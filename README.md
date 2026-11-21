@@ -57,11 +57,11 @@ Some parts are outside ui-sdk because they aren't interface: the synth, drums an
 ## Run it
 
 ```bash
-npm install
-npm run dev     # http://localhost:3000
-npm test        # Vitest
-npm run lint
-npm run build
+pnpm install
+pnpm run dev     # http://localhost:3000
+pnpm test        # Vitest
+pnpm run lint
+pnpm run build
 ```
 
 Built with Next.js 16, React 19 and Tailwind CSS 4.

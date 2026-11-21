@@ -50,7 +50,7 @@ Every path ends the same way:
 
 ## When you're done
 
-1. **Typecheck.** If the root `tsconfig.json` has `"files": []` and `references`, `npx tsc --noEmit` checks nothing: run `npx tsc -b` or `npx tsc --noEmit -p <app config>`. For Svelte, run `svelte-check`; for Vue, `vue-tsc`.
+1. **Typecheck.** If the root `tsconfig.json` has `"files": []` and `references`, `pnpm exec tsc --noEmit` checks nothing: run `pnpm exec tsc -b` or `pnpm exec tsc --noEmit -p <app config>`. For Svelte, run `svelte-check`; for Vue, `vue-tsc`.
 2. **Write and run tests** (see testing.md). Every task gets tests, and every interface gets at least the agent test from agent-ready.md. If a test finds a bug in code you were asked only to test, mark it `test.fails` (or `it.fails`) with a one-line reason, report the bug, and leave the suite green.
 3. **Read every comment in your diff.** Delete it unless it names a browser quirk, an APG rule or a trade-off, and cut what's left to two lines. Turn JSDoc on app code into a plain comment or delete it. Never tell the reader to replace something.
 4. **Report** each command you ran with its exit code, anything you couldn't check, and anything the docs or types got wrong or left out.
